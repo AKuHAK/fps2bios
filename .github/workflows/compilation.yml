@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    name: PS2Ident compilation
+    name: fps2bios compilation
     runs-on: ubuntu-latest
     container: ps2dev/ps2dev:v1.0
     # instead of "ps2dev/ps2dev:latest" you can use different tags, for example for old projects you can use "ps2dev/ps2dev:v1.0"
