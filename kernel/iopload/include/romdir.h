@@ -5,37 +5,41 @@
 
 // an entry in a romdir table. a romdir table is an array of these.
 // gets filled in by searchRomDir()
-typedef struct romdir_entry {
-	char	name[10];		//+00
-	short	extSize;		//+0A
-	int		fileSize;		//+0C
-} __attribute__ ((packed)) ROMDIR_ENTRY;
+typedef struct romdir_entry
+{
+	char name[10]; //+00
+	short extSize; //+0A
+	int fileSize; //+0C
+} __attribute__((packed)) ROMDIR_ENTRY;
 
 
 // info about a file in a romdir
 // gets filled in by searchFileInRom()
-typedef struct {
-	ROMDIR_ENTRY*	entry;	// pointer to the file's ROMDIR_ENTRY
-	u32		fileData;		// address of file contents
-	u32		extData;		// address of file's ext info
+typedef struct
+{
+	ROMDIR_ENTRY* entry; // pointer to the file's ROMDIR_ENTRY
+	u32 fileData; // address of file contents
+	u32 extData; // address of file's ext info
 } ROMFILE_INFO;
 
 // info about the location of a romdir table
-typedef struct {
-	u32		romPtr;			//+00
-	ROMDIR_ENTRY* romdirPtr;//+04
-	u32		extinfoPtr;		//+08
+typedef struct
+{
+	u32 romPtr; //+00
+	ROMDIR_ENTRY* romdirPtr; //+04
+	u32 extinfoPtr; //+08
 } ROMDIR_INFO;
 
-typedef struct romfs {
-	char*	filename;		//+00
-	int		fd;				//+04
-	int		size;			//+08
-	ROMDIR_INFO romdirInfo;	//+0C
+typedef struct romfs
+{
+	char* filename; //+00
+	int fd; //+04
+	int size; //+08
+	ROMDIR_INFO romdirInfo; //+0C
 } ROMFS;
 
 // rounds off a value to the next multiple
-#define ROUND_UP(num, multiple)	(((num)+multiple-1) & (~(multiple-1)))
+#define ROUND_UP(num, multiple) (((num) + multiple - 1) & (~(multiple - 1)))
 
 // searches between beginning and end addresses for a romdir structure.
 // if found it returns info about it in romDirInfo.

@@ -6,13 +6,14 @@
 #include "eeinit.h"
 #include "eedebug.h"
 
-void __attribute__((noreturn)) eeload_start() {
+void __attribute__((noreturn)) eeload_start()
+{
 	void (*entry)();
 	__puts("EELOAD start\n");
 
 	__printf("about to SifInitRpc(0)\n");
 	SifInitRpc(0);
-    __printf("done rpc\n");
+	__printf("done rpc\n");
 
 	entry = (void (*)())loadElfFile("INTRO");
 	entry();
@@ -20,15 +21,18 @@ void __attribute__((noreturn)) eeload_start() {
 	entry = (void (*)())loadElfFile("LOADER");
 	entry();
 
-	for (;;);
+	for (;;)
+		;
 }
 
-void Kmemcpy(void *dest, const void *src, int n) {
-	const u8 *s = (u8*)src;
-	u8 *d = (u8*)dest;
+void Kmemcpy(void* dest, const void* src, int n)
+{
+	const u8* s = (u8*)src;
+	u8* d = (u8*)dest;
 
-	while (n) {
-		*d++ = *s++; n--;
+	while (n)
+	{
+		*d++ = *s++;
+		n--;
 	}
 }
-

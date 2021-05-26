@@ -116,7 +116,7 @@ The Exception Manager maintains an array of 16 pointers (one for each of the 16 
 
 # The Interrupt Manager (INTRMAN – version 1.2)
 
-The interrupt manager builds upon the services of the exception manager. Its main task is to service the interrupt exception and to call the correct interrupt service for the current interrupt. It installs an exception handler for exception code 0 (interrupt) and exception code 8 (syscall exception). It also deals with context switching of the stack which is used by the thread manager.  
+The interrupt manager builds upon the services of the exception manager. Its main task is to service the interrupt exception and to call the correct interrupt service for the current interrupt. It installs an exception handler for exception code 0 (interrupt) and exception code 8 (syscall exception). It also deals with context switching of the stack which is used by the thread manager.
 The interrupt table is located directly after the exception table (so starting at 0x0480) – but I don’t think this is important for the public interface.
 
 |Ordinal|Function Definition                                                              |
@@ -156,7 +156,7 @@ The interrupt table is located directly after the exception table (so starting a
 
 # Stack frame layout
 
-The interrupt manager also handles the management of the stackframe when context switching between threads. The stack frame is a reserved area on the stack that is large enough to hold the entire processor state. This enables the processor state to be saved and restored between interrupts and context switches. For performance reasons, the entire state is not always stored – an interrupt can define via the mode setting what processor registers it will not preserve and so need saving.  
+The interrupt manager also handles the management of the stackframe when context switching between threads. The stack frame is a reserved area on the stack that is large enough to hold the entire processor state. This enables the processor state to be saved and restored between interrupts and context switches. For performance reasons, the entire state is not always stored – an interrupt can define via the mode setting what processor registers it will not preserve and so need saving.
 The stack frame contains a status field which defines how much of it is currently valid so that incremental saving and restoring from it can be achieved. In general, the layout of the stack frame could (and should) be considered as private to the interrupt manager. Given that it is exposed publicly though and the information is available to games, it is documented below.
 
 |Offset|Stored value          |                      |                      |                      |            |

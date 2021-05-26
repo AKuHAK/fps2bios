@@ -6,9 +6,9 @@
 #include "eedebug.h"
 
 
-void main() {
+void main()
+{
 	__printf("LOADER start\n");
 
 	menuStart();
 }
-

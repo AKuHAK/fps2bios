@@ -22,126 +22,139 @@
 #include "kloadcore.h"
 #include "kintrman.h"
 
-int memmap_table[]={
-	0xBF801008, 0xBF80100C, 0xBF801010, 	     0, 0xBF801014,//spu_delay
-	0xBF801018,	     0,		 0, 0xBF80101C, 0xBF801414,
-	0xBF801418, 0xBF80141C, 0xBF801420
-};
+int memmap_table[] = {
+	0xBF801008, 0xBF80100C, 0xBF801010, 0, 0xBF801014, //spu_delay
+	0xBF801018, 0, 0, 0xBF80101C, 0xBF801414,
+	0xBF801418, 0xBF80141C, 0xBF801420};
 
-int memmap_table_2[]={
-	0xBF801000, 0xBF801400,		 0,	     0, 0xBF801404,
-	0xBF801408,	     0,		 0, 0xBF801004, 0xBF80140C,
-		 0, 0xBF801410,		 0
-};
+int memmap_table_2[] = {
+	0xBF801000, 0xBF801400, 0, 0, 0xBF801404,
+	0xBF801408, 0, 0, 0xBF801004, 0xBF80140C,
+	0, 0xBF801410, 0};
 
 int _start();
 
 ///////////////////////////////////////////////////////////////////////
-int return_0(){
+int return_0()
+{
 	return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////
-int SSBUSsetTable1(int code, int value){	//set
-    int *v;
-	if ((code < 13) && (v=(int*)memmap_table[code]))
-		return *v=value;
+int SSBUSsetTable1(int code, int value)
+{ //set
+	int* v;
+	if ((code < 13) && (v = (int*)memmap_table[code]))
+		return *v = value;
 	return -1;
 }
 
 ///////////////////////////////////////////////////////////////////////
-int SSBUSgetTable1(int code){			//get
-    int *v;
-	if ((code < 13) && (v=(int*)memmap_table[code]))
+int SSBUSgetTable1(int code)
+{ //get
+	int* v;
+	if ((code < 13) && (v = (int*)memmap_table[code]))
 		return *v;
 	return -1;
 }
 
 ///////////////////////////////////////////////////////////////////////
-int SSBUSsetTable2(int code, int value){	//set
-    int *v;
-	if ((code < 13) && (v=(int*)memmap_table_2[code]))
-		return *v=value;
+int SSBUSsetTable2(int code, int value)
+{ //set
+	int* v;
+	if ((code < 13) && (v = (int*)memmap_table_2[code]))
+		return *v = value;
 	return -1;
 }
 
 ///////////////////////////////////////////////////////////////////////
-int SSBUSgetTable2(int code){			//get
-    int *v;
-	if ((code < 13) && (v=(int*)memmap_table_2[code]))
+int SSBUSgetTable2(int code)
+{ //get
+	int* v;
+	if ((code < 13) && (v = (int*)memmap_table_2[code]))
 		return *v;
 	return -1;
 }
 
 ///////////////////////////////////////////////////////////////////////
-int SSBUSsetCOM_DELAY_1st(int a){			//set lowest nibble
-	return	 *(int*)(0xBF801020) =
-		(*(int*)(0xBF801020) & 0xFFFFFFF0) |
-		(             a      &        0xF);
+int SSBUSsetCOM_DELAY_1st(int a)
+{ //set lowest nibble
+	return *(int*)(0xBF801020) =
+			   (*(int*)(0xBF801020) & 0xFFFFFFF0) |
+			   (a & 0xF);
 }
 
 ///////////////////////////////////////////////////////////////////////
-int SSBUSgetCOM_DELAY_1st(){				//get lowest nibble
-	return   *(int*)(0xBF801020) &        0xF;
+int SSBUSgetCOM_DELAY_1st()
+{ //get lowest nibble
+	return *(int*)(0xBF801020) & 0xF;
 }
 
 ///////////////////////////////////////////////////////////////////////
-int SSBUSsetCOM_DELAY_2nd(int a){			//set
-	return	 *(int*)(0xBF801020) =
-		(*(int*)(0xBF801020) & 0xFFFFFF0F) |
-		(         (a << 4)   &       0xF0);
+int SSBUSsetCOM_DELAY_2nd(int a)
+{ //set
+	return *(int*)(0xBF801020) =
+			   (*(int*)(0xBF801020) & 0xFFFFFF0F) |
+			   ((a << 4) & 0xF0);
 }
 
 ///////////////////////////////////////////////////////////////////////
-int SSBUSgetCOM_DELAY_2nd(){				//get
+int SSBUSgetCOM_DELAY_2nd()
+{ //get
 	return *(unsigned char*)(0xBF801020) >> 4;
 }
 
 ///////////////////////////////////////////////////////////////////////
-int SSBUSsetCOM_DELAY_3rd(int a){			//set
-	return	 *(int*)(0xBF801020) =
-		(*(int*)(0xBF801020) & 0xFFFFF0FF) |
-		(         (a << 8)   &      0xF00);
+int SSBUSsetCOM_DELAY_3rd(int a)
+{ //set
+	return *(int*)(0xBF801020) =
+			   (*(int*)(0xBF801020) & 0xFFFFF0FF) |
+			   ((a << 8) & 0xF00);
 }
 
 ///////////////////////////////////////////////////////////////////////
-int SSBUSgetCOM_DELAY_3rd(){				//get
-	return  (*(int*)(0xBF801020) >> 8) & 0xF;
+int SSBUSgetCOM_DELAY_3rd()
+{ //get
+	return (*(int*)(0xBF801020) >> 8) & 0xF;
 }
 
 ///////////////////////////////////////////////////////////////////////
-int SSBUSsetCOM_DELAY_4th(int a){			//set
-	return	 *(int*)(0xBF801020) =
-		(*(int*)(0xBF801020) & 0xFFFF0FFF) |
-		(        (a << 12)   &     0xF000);
+int SSBUSsetCOM_DELAY_4th(int a)
+{ //set
+	return *(int*)(0xBF801020) =
+			   (*(int*)(0xBF801020) & 0xFFFF0FFF) |
+			   ((a << 12) & 0xF000);
 }
 
 ///////////////////////////////////////////////////////////////////////
-int SSBUSgetCOM_DELAY_4th(){				//get
-	return  (*(int*)(0xBF801020) >> 12) & 0xF;
+int SSBUSgetCOM_DELAY_4th()
+{ //get
+	return (*(int*)(0xBF801020) >> 12) & 0xF;
 }
 
 ///////////////////////////////////////////////////////////////////////
-int SSBUSsetCOM_DELAY(int a){				//set
-	return   *(int*)(0xBF801020) = a;
+int SSBUSsetCOM_DELAY(int a)
+{ //set
+	return *(int*)(0xBF801020) = a;
 }
 
 ///////////////////////////////////////////////////////////////////////
-int SSBUSgetCOM_DELAY(){				//get
-	return   *(int*)(0xBF801020);
+int SSBUSgetCOM_DELAY()
+{ //get
+	return *(int*)(0xBF801020);
 }
 
 ///////////////////////////////////////////////////////////////////////
-void retonly(){}
+void retonly() {}
 
 //////////////////////////////entrypoint///////////////////////////////
-struct export export_stub={
+struct export export_stub = {
 	0x41C00000,
 	0,
-	VER(1, 1),	// 1.1 => 0x101
+	VER(1, 1), // 1.1 => 0x101
 	0,
 	"ssbusc",
-	(func)_start,	// entrypoint
+	(func)_start, // entrypoint
 	(func)retonly,
 	(func)return_0,
 	(func)retonly,
@@ -159,15 +172,17 @@ struct export export_stub={
 	(func)SSBUSgetCOM_DELAY_4th,
 	(func)SSBUSsetCOM_DELAY,
 	(func)SSBUSgetCOM_DELAY,
-	0		// end of list
+	0 // end of list
 };
 
 //////////////////////////////entrypoint///////////////////////////////
-int _start(int argc, char* argv[]){
-    int x;
+int _start(int argc, char* argv[])
+{
+	int x;
 
 	CpuSuspendIntr(&x);
-	if (RegisterLibraryEntries(&export_stub)==0) {
+	if (RegisterLibraryEntries(&export_stub) == 0)
+	{
 		CpuResumeIntr(x);
 		return 0;
 	}
@@ -175,4 +190,3 @@ int _start(int argc, char* argv[]){
 	CpuResumeIntr(x);
 	return 1;
 }
-

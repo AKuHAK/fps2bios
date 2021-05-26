@@ -8,7 +8,8 @@
 #include "romdir.h"
 
 
-int menuStart() {
+int menuStart()
+{
 
 
 	__printf("%s\n", __FUNCTION__);
@@ -17,4 +18,3 @@ int menuStart() {
 
 	return 0;
 }
-

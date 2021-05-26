@@ -20,23 +20,24 @@
 #include "iopdebug.h"
 #include "kthbase.h"
 
-int debug=1;
+int debug = 1;
 
 #define _dprintf(fmt, args...) \
-	if (debug > 0) __printf("threadman:" fmt, ## args)
+	if (debug > 0) \
+	__printf("threadman:" fmt, ##args)
 
 int _start();
 
 
 void _retonly() {}
 
-struct export thbase_stub={
+struct export thbase_stub = {
 	0x41C00000,
 	0,
-	VER(1, 1),	// 1.1 => 0x101
+	VER(1, 1), // 1.1 => 0x101
 	0,
 	"thbase",
-	(func)_start,	// entrypoint
+	(func)_start, // entrypoint
 	(func)_retonly,
 	(func)_retonly,
 	(func)_retonly,
@@ -78,16 +79,15 @@ struct export thbase_stub={
 	(func)_retonly,
 	(func)_retonly, // 0x28
 	(func)_retonly,
-	0
-};
+	0};
 
-struct export thevent_stub={
+struct export thevent_stub = {
 	0x41C00000,
 	0,
-	VER(1, 1),	// 1.1 => 0x101
+	VER(1, 1), // 1.1 => 0x101
 	0,
 	"thevent",
-	(func)_start,	// entrypoint
+	(func)_start, // entrypoint
 	(func)_retonly,
 	(func)_retonly,
 	(func)_retonly,
@@ -102,16 +102,15 @@ struct export thevent_stub={
 	(func)_retonly,
 	(func)_retonly,
 	(func)_retonly,
-	0
-};
+	0};
 
-struct export thsemap_stub={
+struct export thsemap_stub = {
 	0x41C00000,
 	0,
-	VER(1, 1),	// 1.1 => 0x101
+	VER(1, 1), // 1.1 => 0x101
 	0,
 	"thsemap",
-	(func)_start,	// entrypoint
+	(func)_start, // entrypoint
 	(func)_retonly,
 	(func)_retonly,
 	(func)_retonly,
@@ -124,25 +123,26 @@ struct export thsemap_stub={
 	(func)_retonly,
 	(func)_retonly,
 	(func)_retonly,
-	0
-};
+	0};
 
 
-int _start() {
+int _start()
+{
 	int x;
 
 	_dprintf("_start\n");
 
-//	if (RegisterNonAutoLinkEntries(&thrdman_stub))	return 1;
-	if (RegisterLibraryEntries(&thbase_stub))	return 1;
+	//	if (RegisterNonAutoLinkEntries(&thrdman_stub))	return 1;
+	if (RegisterLibraryEntries(&thbase_stub))
+		return 1;
 
 	CpuSuspendIntr(&x);
 
 	RegisterLibraryEntries(&thevent_stub);
 	RegisterLibraryEntries(&thsemap_stub);
-//	RegisterLibraryEntries(&thmsgbx_stub);
-//	RegisterLibraryEntries(&thfpool_stub);
-//	RegisterLibraryEntries(&thvpool_stub);
+	//	RegisterLibraryEntries(&thmsgbx_stub);
+	//	RegisterLibraryEntries(&thfpool_stub);
+	//	RegisterLibraryEntries(&thvpool_stub);
 
 	CpuEnableIntr();
 }

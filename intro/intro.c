@@ -8,7 +8,8 @@
 #include "romdir.h"
 
 
-int main() {
+int main()
+{
 
 	__printf("INTRO start\n");
 
@@ -16,4 +17,3 @@ int main() {
 
 	return 0;
 }
-

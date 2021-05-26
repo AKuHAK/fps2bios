@@ -6,12 +6,13 @@
 __asm__(".org 0x0000");
 
 __asm__(".set noreorder");
-void CpuException0() {
+void CpuException0()
+{
 }
 
 __asm__(".org 0x0080");
 
 __asm__(".set noreorder");
-void CpuException() {
+void CpuException()
+{
 }
-

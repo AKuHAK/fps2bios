@@ -6,7 +6,7 @@
 
 
 void __putc(u8 c);
-void __puts(u8 *s);
-int  __printf(const char *format, ...);
+void __puts(u8* s);
+int __printf(const char* format, ...);
 
 #endif /* __EEDEBUG_H__ */

@@ -2,22 +2,28 @@
 #include <tamtypes.h>
 //#include <stdio.h>
 
-void Kputc(u8 c) {
+void Kputc(u8 c)
+{
 	*((u8*)0x1f80380c) = c;
 }
 
-void Kputs(u8 *s) {
-	while (*s != 0) {
+void Kputs(u8* s)
+{
+	while (*s != 0)
+	{
 		Kputc(*s++);
 	}
 }
 
-void Kmemcpy(void *dest, const void *src, int n) {
-	const u8 *s = (u8*)src;
-	u8 *d = (u8*)dest;
+void Kmemcpy(void* dest, const void* src, int n)
+{
+	const u8* s = (u8*)src;
+	u8* d = (u8*)dest;
 
-	while (n) {
-		*d++ = *s++; n--;
+	while (n)
+	{
+		*d++ = *s++;
+		n--;
 	}
 }
 /*
@@ -34,7 +40,7 @@ int  Kprintf(const char *format, ...) {
 	return ret;
 }
 */
-void _start() {
+void _start()
+{
 	Kputs("STDIO start\n");
 }
-

@@ -40,184 +40,204 @@ static int kstrlen(const char* src);
 void _start(int ramMBSize, int bootInfo, char* udnlString, int unk)
 {
 	ROMFS ri;
-	void *(*sysmem_entry)(u32 iopmemsize);
-	void (*loadcore_entry)(BOOT_PARAMS *init);
+	void* (*sysmem_entry)(u32 iopmemsize);
+	void (*loadcore_entry)(BOOT_PARAMS * init);
 	int i;
-    ROMDIR_INFO romdir_info;
-    ROMFILE_INFO romfile_info;
+	ROMDIR_INFO romdir_info;
+	ROMFILE_INFO romfile_info;
 	char conf_filename[10];
-    int ram_byte_size, num_lines;
-    u32 module_load_addr;
-    u32** modules_ptr;
-    char* file_data_ptr, *file_data_end;
-    void* psysmemstart;
-    BOOT_PARAMS* boot_params;
+	int ram_byte_size, num_lines;
+	u32 module_load_addr;
+	u32** modules_ptr;
+	char *file_data_ptr, *file_data_end;
+	void* psysmemstart;
+	BOOT_PARAMS* boot_params;
 
-    if( ramMBSize <= 2 )
-        ram_byte_size = 2;
-    else
-        ram_byte_size = ramMBSize;
+	if (ramMBSize <= 2)
+		ram_byte_size = 2;
+	else
+		ram_byte_size = ramMBSize;
 	ram_byte_size <<= 20;
 
-    // compile module list to send to loadcore
-    boot_params = (BOOT_PARAMS*)0x30000; // random address, has to be clear before loadcore call
-	boot_params->ramMBSize	= ramMBSize;
-	boot_params->bootInfo		= bootInfo;
-	boot_params->udnlString	= NULL;
-	boot_params->moduleAddrs	= (u32**)((u32)boot_params + sizeof(BOOT_PARAMS)); // right after
+	// compile module list to send to loadcore
+	boot_params = (BOOT_PARAMS*)0x30000; // random address, has to be clear before loadcore call
+	boot_params->ramMBSize = ramMBSize;
+	boot_params->bootInfo = bootInfo;
+	boot_params->udnlString = NULL;
+	boot_params->moduleAddrs = (u32**)((u32)boot_params + sizeof(BOOT_PARAMS)); // right after
 
-    // if a undl string is specified, get a copy of it and store a pointer to it
-	if(udnlString)
+	// if a undl string is specified, get a copy of it and store a pointer to it
+	if (udnlString)
 	{
 		boot_params->udnlString = (char*)boot_params->moduleAddrs;
 		kstrcpy(boot_params->udnlString, udnlString);
 		boot_params->moduleAddrs = (u32**)((u32)boot_params->udnlString + ROUND_UP(kstrlen(udnlString) + 8, 4));
 	}
 
-    // find the romdir table in the rom
-    if( searchRomDir((u32*)0xBFC00000, (u32*)0xBFC10000, &romdir_info) == NULL )
+	// find the romdir table in the rom
+	if (searchRomDir((u32*)0xBFC00000, (u32*)0xBFC10000, &romdir_info) == NULL)
 	{
-        __printf("IOPBOOT: failed to find start of rom!\n");
+		__printf("IOPBOOT: failed to find start of rom!\n");
 		// error - cant find romdir!
-		while(1) *(u8*)0x80000000 = 0;
+		while (1)
+			*(u8*)0x80000000 = 0;
 	}
 
-    // find the bootconf file in the romdir table
-    kstrcpy(conf_filename, "IOPBTCONF");
+	// find the bootconf file in the romdir table
+	kstrcpy(conf_filename, "IOPBTCONF");
 	conf_filename[8] = '0' + bootInfo;
-	if( !searchFileInRom(&romdir_info, conf_filename, &romfile_info) )
+	if (!searchFileInRom(&romdir_info, conf_filename, &romfile_info))
 	{
 		kstrcpy(conf_filename, "IOPBTCONF");
-		if( !searchFileInRom(&romdir_info, conf_filename, &romfile_info) )
+		if (!searchFileInRom(&romdir_info, conf_filename, &romfile_info))
 		{
-            __printf("IOPBTCONF file not found!\n");
+			__printf("IOPBTCONF file not found!\n");
 			// error - cant find conf file!
-			while(1) *(u8*)0x80000000 = 1;
+			while (1)
+				*(u8*)0x80000000 = 1;
 		}
 	}
 
-    // count the number of lines in conf file
-    file_data_ptr = (char*)romfile_info.fileData;
-    file_data_end = (char*)romfile_info.fileData + romfile_info.entry->fileSize;
-    {
-        num_lines = 0;
-        while( file_data_ptr < file_data_end ) {
-            // loop until a "newline" charcter is found
-            while(file_data_ptr < file_data_end) {
-                if(*file_data_ptr++ < ' ')
-                    break;
-            }
+	// count the number of lines in conf file
+	file_data_ptr = (char*)romfile_info.fileData;
+	file_data_end = (char*)romfile_info.fileData + romfile_info.entry->fileSize;
+	{
+		num_lines = 0;
+		while (file_data_ptr < file_data_end)
+		{
+			// loop until a "newline" charcter is found
+			while (file_data_ptr < file_data_end)
+			{
+				if (*file_data_ptr++ < ' ')
+					break;
+			}
 
-            // loop until a "non-newline" charcter is found
-            while(file_data_ptr < file_data_end) {
-                if(*file_data_ptr++ >= ' ')
-                    break;
-            }
+			// loop until a "non-newline" charcter is found
+			while (file_data_ptr < file_data_end)
+			{
+				if (*file_data_ptr++ >= ' ')
+					break;
+			}
 
-            num_lines++;
-        }
-        num_lines++;
-    }
+			num_lines++;
+		}
+		num_lines++;
+	}
 
-    // get the addresses of each module
-    {
-        module_load_addr = 0;
-        boot_params->numConfLines = num_lines-1;
-        modules_ptr = boot_params->moduleAddrs;
-        char* file_data_ptr = (char*)romfile_info.fileData;
-        while( file_data_ptr < file_data_end ) {
-            if(*file_data_ptr == '@') {
-                file_data_ptr++;
-                module_load_addr = getHexNumber(&file_data_ptr);
-            }
-            else if(*file_data_ptr == '!') {
-                if( file_data_ptr[1] == 'a' &&
-                    file_data_ptr[2] == 'd' &&
-                    file_data_ptr[3] == 'd' &&
-                    file_data_ptr[4] == 'r' &&
-                    file_data_ptr[5] == ' ' ) {
-                    file_data_ptr += 6;
-                    *modules_ptr++ = (u32*)(getHexNumber(&file_data_ptr) * 4 + 1);
-                    *modules_ptr++ = 0;
-                }
-            }
-            else if(*file_data_ptr != '#') {
-                // 'file_data_ptr' should be pointing to a filename
-                // this finds the address of that file in the rom
-                ROMFILE_INFO module_fileinfo;
-                char strmodule[16];
-                for(i = 0; i < 16; ++i) {
-                    if( file_data_ptr[i] < ' ' )
-                        break;
-                    strmodule[i] = file_data_ptr[i];
-                }
-                strmodule[i] = 0;
+	// get the addresses of each module
+	{
+		module_load_addr = 0;
+		boot_params->numConfLines = num_lines - 1;
+		modules_ptr = boot_params->moduleAddrs;
+		char* file_data_ptr = (char*)romfile_info.fileData;
+		while (file_data_ptr < file_data_end)
+		{
+			if (*file_data_ptr == '@')
+			{
+				file_data_ptr++;
+				module_load_addr = getHexNumber(&file_data_ptr);
+			}
+			else if (*file_data_ptr == '!')
+			{
+				if (file_data_ptr[1] == 'a' &&
+					file_data_ptr[2] == 'd' &&
+					file_data_ptr[3] == 'd' &&
+					file_data_ptr[4] == 'r' &&
+					file_data_ptr[5] == ' ')
+				{
+					file_data_ptr += 6;
+					*modules_ptr++ = (u32*)(getHexNumber(&file_data_ptr) * 4 + 1);
+					*modules_ptr++ = 0;
+				}
+			}
+			else if (*file_data_ptr != '#')
+			{
+				// 'file_data_ptr' should be pointing to a filename
+				// this finds the address of that file in the rom
+				ROMFILE_INFO module_fileinfo;
+				char strmodule[16];
+				for (i = 0; i < 16; ++i)
+				{
+					if (file_data_ptr[i] < ' ')
+						break;
+					strmodule[i] = file_data_ptr[i];
+				}
+				strmodule[i] = 0;
 
-                if( searchFileInRom(&romdir_info, strmodule, &module_fileinfo) == NULL ) {
-                    __printf("IOPBOOT: failed to find %s module\n", strmodule);
-                    return;
-                }
+				if (searchFileInRom(&romdir_info, strmodule, &module_fileinfo) == NULL)
+				{
+					__printf("IOPBOOT: failed to find %s module\n", strmodule);
+					return;
+				}
 
-                //__printf("mod: %s:%x\n", strmodule, module_fileinfo.fileData);
+				//__printf("mod: %s:%x\n", strmodule, module_fileinfo.fileData);
 
-                *modules_ptr++ = (u32*)module_fileinfo.fileData;
-                *modules_ptr = 0; // don't increment
-            }
+				*modules_ptr++ = (u32*)module_fileinfo.fileData;
+				*modules_ptr = 0; // don't increment
+			}
 
-            // loop until a "newline" charcter is found
-            while(file_data_ptr < file_data_end) {
-                if(*file_data_ptr++ < ' ')
-                    break;
-            }
+			// loop until a "newline" charcter is found
+			while (file_data_ptr < file_data_end)
+			{
+				if (*file_data_ptr++ < ' ')
+					break;
+			}
 
-            // loop until a "non-newline" charcter is found
-            while(file_data_ptr < file_data_end) {
-                if(*file_data_ptr >= ' ')
-                    break;
-                file_data_ptr++;
-            }
-        }
-    }
+			// loop until a "non-newline" charcter is found
+			while (file_data_ptr < file_data_end)
+			{
+				if (*file_data_ptr >= ' ')
+					break;
+				file_data_ptr++;
+			}
+		}
+	}
 
-    if( searchFileInRom(&romdir_info, "IOPBOOT", &romfile_info) == NULL ) {
-        __printf("loadElfFile: failed to find IOPBOOT module\n");
-        return;
-    }
+	if (searchFileInRom(&romdir_info, "IOPBOOT", &romfile_info) == NULL)
+	{
+		__printf("loadElfFile: failed to find IOPBOOT module\n");
+		return;
+	}
 
-    // load sysmem module to memory and execute it
-    if( searchFileInRom(&romdir_info, "SYSMEM", &romfile_info) == NULL ) {
-        __printf("loadElfFile: failed to find SYSMEM module\n");
-        return;
-    }
-    sysmem_entry = (void *(*)(u32))loadElfFile(&romfile_info, module_load_addr);
-    if( sysmem_entry == 0 )
-        return;
+	// load sysmem module to memory and execute it
+	if (searchFileInRom(&romdir_info, "SYSMEM", &romfile_info) == NULL)
+	{
+		__printf("loadElfFile: failed to find SYSMEM module\n");
+		return;
+	}
+	sysmem_entry = (void* (*)(u32))loadElfFile(&romfile_info, module_load_addr);
+	if (sysmem_entry == 0)
+		return;
 
-    psysmemstart = sysmem_entry(ram_byte_size);
-    //FlushIcache();
-    if( psysmemstart == 0 ) {
-        __printf("IOPBOOT: sysmem failed\n");
-        return;
-    }
+	psysmemstart = sysmem_entry(ram_byte_size);
+	//FlushIcache();
+	if (psysmemstart == 0)
+	{
+		__printf("IOPBOOT: sysmem failed\n");
+		return;
+	}
 
-    __printf("SYSMEM success, start addr: %x, alloc start: %x\n", module_load_addr, psysmemstart);
+	__printf("SYSMEM success, start addr: %x, alloc start: %x\n", module_load_addr, psysmemstart);
 
-    if( searchFileInRom(&romdir_info, "LOADCORE", &romfile_info) == NULL ) {
-        __printf("loadElfFile: failed to find SYSMEM module\n");
-        return;
-    }
-    loadcore_entry = (void (*)())loadElfFile(&romfile_info, (u32)psysmemstart);
-    if( loadcore_entry == 0 )
-        return;
+	if (searchFileInRom(&romdir_info, "LOADCORE", &romfile_info) == NULL)
+	{
+		__printf("loadElfFile: failed to find SYSMEM module\n");
+		return;
+	}
+	loadcore_entry = (void (*)())loadElfFile(&romfile_info, (u32)psysmemstart);
+	if (loadcore_entry == 0)
+		return;
 
-    boot_params->firstModuleAddr = (u32)module_load_addr + 0x30; // skip elf?
-    if(0x1FC10000 < ram_byte_size) {
-        boot_params->pos = 0x1FC00000;
+	boot_params->firstModuleAddr = (u32)module_load_addr + 0x30; // skip elf?
+	if (0x1FC10000 < ram_byte_size)
+	{
+		boot_params->pos = 0x1FC00000;
 		boot_params->size = 0x10100;
 	}
-	else {
-        boot_params->pos = 0;
-        boot_params->size = 0;
+	else
+	{
+		boot_params->pos = 0;
+		boot_params->size = 0;
 	}
 
 	__printf("executing LOADCORE entry at %p\n", loadcore_entry);
@@ -225,28 +245,34 @@ void _start(int ramMBSize, int bootInfo, char* udnlString, int unk)
 
 	__printf("iopboot error\n");
 
-    // error - loadcore shouldnt ever return
-	while(1) *(u8*)0x80000000 = 2;
+	// error - loadcore shouldnt ever return
+	while (1)
+		*(u8*)0x80000000 = 2;
 }
 
-void Kmemcpy(void *dest, const void *src, int n) {
-	const u8 *s = (u8*)src;
-	u8 *d = (u8*)dest;
+void Kmemcpy(void* dest, const void* src, int n)
+{
+	const u8* s = (u8*)src;
+	u8* d = (u8*)dest;
 
-	while (n) {
-		*d++ = *s++; n--;
+	while (n)
+	{
+		*d++ = *s++;
+		n--;
 	}
 }
 
 static void kstrcpy(char* dst, const char* src)
 {
-    while(*src) *dst++ = *src++;
-    *dst = 0;
+	while (*src)
+		*dst++ = *src++;
+	*dst = 0;
 }
 
 static int kstrlen(const char* src)
 {
-    int len = 0;
-    while(*src++) len++;
-    return len;
+	int len = 0;
+	while (*src++)
+		len++;
+	return len;
 }

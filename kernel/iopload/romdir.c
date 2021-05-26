@@ -17,17 +17,17 @@ ROMDIR_INFO* searchRomDir(const u32* searchStartAddr, const u32* searchEndAddr, 
 	ROMDIR_ENTRY* dir_entry = (ROMDIR_ENTRY*)searchStartAddr;
 	while (dir_entry < (ROMDIR_ENTRY*)searchEndAddr)
 	{
-		if(dir_entry->name[0] == 'R' &&
-           dir_entry->name[1] == 'E' &&
-           dir_entry->name[2] == 'S' &&
-           dir_entry->name[3] == 'E' &&
-           dir_entry->name[4] == 'T' &&
-           dir_entry->name[5] == 0 &&
-           (ROUND_UP(dir_entry->fileSize,16) == offset) )
+		if (dir_entry->name[0] == 'R' &&
+			dir_entry->name[1] == 'E' &&
+			dir_entry->name[2] == 'S' &&
+			dir_entry->name[3] == 'E' &&
+			dir_entry->name[4] == 'T' &&
+			dir_entry->name[5] == 0 &&
+			(ROUND_UP(dir_entry->fileSize, 16) == offset))
 		{
-			romDirInfo->romPtr		= (u32)searchStartAddr;						// start of rom
-			romDirInfo->romdirPtr	= dir_entry;							// start of romdir structure
-			romDirInfo->extinfoPtr	= (u32)dir_entry + dir_entry[1].fileSize;	// start of extinfo
+			romDirInfo->romPtr = (u32)searchStartAddr; // start of rom
+			romDirInfo->romdirPtr = dir_entry; // start of romdir structure
+			romDirInfo->extinfoPtr = (u32)dir_entry + dir_entry[1].fileSize; // start of extinfo
 			return romDirInfo;
 		}
 
@@ -50,32 +50,36 @@ ROMDIR_INFO* searchRomDir(const u32* searchStartAddr, const u32* searchEndAddr, 
 ROMFILE_INFO* searchFileInRom(const ROMDIR_INFO* romdirInfo, const char* filename, ROMFILE_INFO* fileinfo)
 {
 	register ROMDIR_ENTRY* dir_entry;
-	register ext_offset=0, file_offset=0;
+	register ext_offset = 0, file_offset = 0;
 	int i;
 
-	for (dir_entry = romdirInfo->romdirPtr; dir_entry->name[0]; dir_entry++) {
+	for (dir_entry = romdirInfo->romdirPtr; dir_entry->name[0]; dir_entry++)
+	{
 
-        for(i = 0; i < 10; ++i) {
-            if( filename[i] == 0 )
-                break;
-            if( dir_entry->name[i] != filename[i] ) {
-                i = -1;
-                break;
-            }
-        }
+		for (i = 0; i < 10; ++i)
+		{
+			if (filename[i] == 0)
+				break;
+			if (dir_entry->name[i] != filename[i])
+			{
+				i = -1;
+				break;
+			}
+		}
 
-		if (i > 0 ) {
-			fileinfo->entry		= dir_entry;
-			fileinfo->fileData	= file_offset + romdirInfo->romPtr;	// address of file in rom
-			fileinfo->extData	= (u32)NULL;								// address of extinfo in rom
+		if (i > 0)
+		{
+			fileinfo->entry = dir_entry;
+			fileinfo->fileData = file_offset + romdirInfo->romPtr; // address of file in rom
+			fileinfo->extData = (u32)NULL; // address of extinfo in rom
 
 			if (dir_entry->extSize)
-				fileinfo->extData = ext_offset + romdirInfo->extinfoPtr;	// address of extinfo in rom
+				fileinfo->extData = ext_offset + romdirInfo->extinfoPtr; // address of extinfo in rom
 			return fileinfo;
 		}
 
-        file_offset += ROUND_UP(dir_entry->fileSize,16);
-        ext_offset += dir_entry->extSize;
+		file_offset += ROUND_UP(dir_entry->fileSize, 16);
+		ext_offset += dir_entry->extSize;
 	}
 
 	// error - file not found
@@ -88,17 +92,20 @@ ROMFILE_INFO* searchFileInRom(const ROMDIR_INFO* romdirInfo, const char* filenam
 // returns:	the value of the hex number
 u32 getHexNumber(char** addr)
 {
-	register char *p;		//a1
-	register u32   h = 0;	//a2;
+	register char* p; //a1
+	register u32 h = 0; //a2;
 
-	for (p=*addr; *p >= '0'; p++)
+	for (p = *addr; *p >= '0'; p++)
 	{
 		int num;
-		if(*p <= '9')		num = *p - '0';
-		else if(*p >= 'a')	num = *p - 'a' + 10;
-		else				num = *p - 'A' + 10;
+		if (*p <= '9')
+			num = *p - '0';
+		else if (*p >= 'a')
+			num = *p - 'a' + 10;
+		else
+			num = *p - 'A' + 10;
 
-		h = h*16 + num;
+		h = h * 16 + num;
 	}
 
 	*addr = p;

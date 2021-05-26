@@ -9,11 +9,11 @@ DIRS = kernel intro loader
 FILES = RESET ROMDIR ROMVER IOPBOOT EELOAD \
 		SYSMEM LOADCORE EXCEPMAN INTRMAN SSBUSC DMACMAN \
 		TIMRMAN SYSCLIB HEAPLIB THREADMAN VBLANK STDIO \
-		SIFMAN SIFCMD SIO2MAN LOADER INTRO IOPBTCONF FP2BLOGO 
+		SIFMAN SIFCMD SIO2MAN LOADER INTRO IOPBTCONF FP2BLOGO
 
 .PHONY: clean
 
-build/fps2bios: build/ps2romgen_exe build/romdir_exe build/romver_exe | build 
+build/fps2bios: build/ps2romgen_exe build/romdir_exe build/romver_exe | build
 	for i in $(DIRS); do \
 		make -C $$i; \
 	done;
@@ -25,13 +25,13 @@ build/fps2bios: build/ps2romgen_exe build/romdir_exe build/romver_exe | build
 	./ps2romgen_exe fps2bios; \
 	cd ..)
 
-build/ps2romgen_exe: ps2romgen.c | build 
+build/ps2romgen_exe: ps2romgen.c | build
 	$(CC) $(CFLAGS) $< -o $@
 
-build/romdir_exe: romdir.c | build 
+build/romdir_exe: romdir.c | build
 	$(CC) $(CFLAGS) $< -o $@
 
-build/romver_exe: romver.c | build 
+build/romver_exe: romver.c | build
 	$(CC) $(CFLAGS) $< -o $@
 
 build:
@@ -41,4 +41,4 @@ clean:
 	rm -f -r *.o build
 	for i in $(DIRS); do \
 		make -C $$i clean; \
-	done; 
+	done;
